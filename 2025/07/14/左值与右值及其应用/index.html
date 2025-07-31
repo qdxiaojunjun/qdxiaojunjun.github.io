@@ -1,0 +1,555 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>左值与右值及其应用 | 云志分享</title><meta name="author" content="小马同学"><meta name="copyright" content="小马同学"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="左值与右值及其应用一、左值与右值的概念1. 定义 左值：可放置在赋值运算符左侧的值，具有持久存储位置的对象 右值：不具有固定存储位置的临时值，表达式求值后立即销毁 C++标准定义：表达式求值后具有身份（identity）和存储位置的是glvalue（泛左值），可以被移动的是rvalue（右值）  2. 左值特点 持久性：生命周期超出当前表达式 可寻址：可用&amp;获取内存地址 可赋值：可放在赋值">
+<meta property="og:type" content="article">
+<meta property="og:title" content="左值与右值及其应用">
+<meta property="og:url" content="https://qdxiaojunjun.github.io/2025/07/14/%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="云志分享">
+<meta property="og:description" content="左值与右值及其应用一、左值与右值的概念1. 定义 左值：可放置在赋值运算符左侧的值，具有持久存储位置的对象 右值：不具有固定存储位置的临时值，表达式求值后立即销毁 C++标准定义：表达式求值后具有身份（identity）和存储位置的是glvalue（泛左值），可以被移动的是rvalue（右值）  2. 左值特点 持久性：生命周期超出当前表达式 可寻址：可用&amp;获取内存地址 可赋值：可放在赋值">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgfe66bbbdeae303140d8086299fb414d.jpg">
+<meta property="article:published_time" content="2025-07-14T10:34:09.299Z">
+<meta property="article:modified_time" content="2025-07-14T10:35:49.048Z">
+<meta property="article:author" content="小马同学">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgfe66bbbdeae303140d8086299fb414d.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "左值与右值及其应用",
+  "url": "https://qdxiaojunjun.github.io/2025/07/14/%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/",
+  "image": "https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgfe66bbbdeae303140d8086299fb414d.jpg",
+  "datePublished": "2025-07-14T10:34:09.299Z",
+  "dateModified": "2025-07-14T10:35:49.048Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "小马同学",
+      "url": "https://qdxiaojunjun.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://qdxiaojunjun.github.io/2025/07/14/%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":50,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '左值与右值及其应用',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/style.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
+
+  if (true) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgfe66bbbdeae303140d8086299fb414d.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">云志分享</span></a><a class="nav-page-title" href="/"><span class="site-name">左值与右值及其应用</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">左值与右值及其应用</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-14T10:34:09.299Z" title="发表于 2025-07-14 18:34:09">2025-07-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-14T10:35:49.048Z" title="更新于 2025-07-14 18:35:49">2025-07-14</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="左值与右值及其应用"><a href="#左值与右值及其应用" class="headerlink" title="左值与右值及其应用"></a>左值与右值及其应用</h1><h2 id="一、左值与右值的概念"><a href="#一、左值与右值的概念" class="headerlink" title="一、左值与右值的概念"></a>一、左值与右值的概念</h2><h3 id="1-定义"><a href="#1-定义" class="headerlink" title="1. 定义"></a>1. 定义</h3><ul>
+<li><strong>左值</strong>：可放置在赋值运算符左侧的值，具有持久存储位置的对象</li>
+<li><strong>右值</strong>：不具有固定存储位置的临时值，表达式求值后立即销毁</li>
+<li><strong>C++标准定义</strong>：表达式求值后具有身份（identity）和存储位置的是glvalue（泛左值），可以被移动的是rvalue（右值）</li>
+</ul>
+<h3 id="2-左值特点"><a href="#2-左值特点" class="headerlink" title="2. 左值特点"></a>2. 左值特点</h3><ul>
+<li><strong>持久性</strong>：生命周期超出当前表达式</li>
+<li><strong>可寻址</strong>：可用<code>&amp;</code>获取内存地址</li>
+<li><strong>可赋值</strong>：可放在赋值表达式左侧</li>
+<li><strong>具名性</strong>：通常有标识符名称</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>;     <span class="comment">// a是左值</span></span><br><span class="line"><span class="type">int</span>* ptr = &amp;a;  <span class="comment">// a可寻址</span></span><br><span class="line">a = <span class="number">20</span>;         <span class="comment">// a可赋值</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-右值特点"><a href="#3-右值特点" class="headerlink" title="3. 右值特点"></a>3. 右值特点</h3><ul>
+<li><strong>临时性</strong>：在表达式结束即销毁</li>
+<li><strong>不可寻址</strong>：无法获取内存地址</li>
+<li><strong>不可赋值</strong>：不能放在赋值表达式左侧</li>
+<li><strong>匿名性</strong>：通常没有标识符名称</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">42;               // 字面量（纯右值）</span><br><span class="line">func();           // 返回临时对象（纯右值）</span><br><span class="line">std::move(a);     // 将亡值（Xvalue）</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-值类别划分"><a href="#4-值类别划分" class="headerlink" title="4. 值类别划分"></a>4. 值类别划分</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    A[表达式] 
+    A --&gt; B[泛左值 glvalue]
+    A --&gt; C[右值 rvalue]
+    B --&gt; D[左值 lvalue]
+    B --&gt; E[将亡值 xvalue]
+    C --&gt; E[将亡值 xvalue]
+    C --&gt; F[纯右值 prvalue]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>名称</th>
+<th>特征</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lvalue</td>
+<td>左值</td>
+<td>有标识&amp;持久</td>
+<td>具名变量<code>int x = 5;</code></td>
+</tr>
+<tr>
+<td>xvalue</td>
+<td>将亡值</td>
+<td>有标识但可被移动</td>
+<td><code>std::move(x)</code></td>
+</tr>
+<tr>
+<td>prvalue</td>
+<td>纯右值</td>
+<td>无标识&amp;临时</td>
+<td><code>42</code>, <code>func()</code></td>
+</tr>
+<tr>
+<td>glvalue</td>
+<td>泛左值</td>
+<td>有标识</td>
+<td>lvalue + xvalue</td>
+</tr>
+<tr>
+<td>rvalue</td>
+<td>右值</td>
+<td>可被移动</td>
+<td>xvalue + prvalue</td>
+</tr>
+</tbody></table>
+<h2 id="二、左值引用与右值引用"><a href="#二、左值引用与右值引用" class="headerlink" title="二、左值引用与右值引用"></a>二、左值引用与右值引用</h2><h3 id="1-引用类型对比"><a href="#1-引用类型对比" class="headerlink" title="1. 引用类型对比"></a>1. 引用类型对比</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>左值引用 (T&amp;)</th>
+<th>常量左值引用 (const T&amp;)</th>
+<th>右值引用 (T&amp;&amp;)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>符号</td>
+<td><code>&amp;</code></td>
+<td><code>const &amp;</code></td>
+<td><code>&amp;&amp;</code></td>
+</tr>
+<tr>
+<td>可绑定左值</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>可绑定右值</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>可修改对象</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>主要用途</td>
+<td>避免拷贝</td>
+<td>通用访问</td>
+<td>资源转移</td>
+</tr>
+</tbody></table>
+<h3 id="2-左值引用-T"><a href="#2-左值引用-T" class="headerlink" title="2. 左值引用 (T&amp;)"></a>2. 左值引用 (T&amp;)</h3><p><strong>基本概念</strong>：只能绑定到左值的引用，提供对现有对象的别名访问</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>; </span><br><span class="line"><span class="type">int</span>&amp; ref = a;   <span class="comment">// ✅ 正确绑定左值</span></span><br><span class="line">ref = <span class="number">20</span>;       <span class="comment">// 通过引用修改原对象</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span>&amp; err = <span class="number">42</span>;  <span class="comment">// ❌ 错误：不能绑定右值</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>实现原理</strong>：在编译层面维护指针语义，运行时零开销</p>
+<h3 id="3-右值引用-T"><a href="#3-右值引用-T" class="headerlink" title="3. 右值引用 (T&amp;&amp;)"></a>3. 右值引用 (T&amp;&amp;)</h3><p><strong>基本概念</strong>：只能绑定到右值的引用，用于移动语义</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::vector&lt;<span class="type">int</span>&gt; <span class="title">createVector</span><span class="params">()</span></span>;</span><br><span class="line">std::vector&lt;<span class="type">int</span>&gt;&amp;&amp; rref = <span class="built_in">createVector</span>(); <span class="comment">// ✅ 绑定临时对象</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> x = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span>&amp;&amp; err = x;  <span class="comment">// ❌ 错误：不能直接绑定左值</span></span><br><span class="line"><span class="type">int</span>&amp;&amp; valid = std::<span class="built_in">move</span>(x); <span class="comment">// ✅ 通过std::move转为右值</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键特征</strong>：</p>
+<ul>
+<li>延长临时对象的生命周期</li>
+<li>支持移动语义避免深拷贝</li>
+<li>实现完美转发</li>
+</ul>
+<h3 id="4-常量左值引用-const-T"><a href="#4-常量左值引用-const-T" class="headerlink" title="4. 常量左值引用 (const T&amp;)"></a>4. 常量左值引用 (const T&amp;)</h3><p><strong>特殊属性</strong>：可同时绑定左值和右值的只读引用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span>&amp; cref1 = <span class="number">10</span>;    <span class="comment">// ✅ 绑定右值</span></span><br><span class="line"><span class="type">int</span> x = <span class="number">20</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span>&amp; cref2 = x;     <span class="comment">// ✅ 绑定左值</span></span><br><span class="line"><span class="comment">// cref2 = 30;           // ❌ 不可修改</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>优化价值</strong>：避免不必要的对象拷贝</p>
+<p><strong>注意：</strong> <strong>一个右值引用变量，本身是一个左值！！！！！！！</strong></p>
+<h2 id="三、应用场景解析"><a href="#三、应用场景解析" class="headerlink" title="三、应用场景解析"></a>三、应用场景解析</h2><h3 id="1-左值引用应用场景"><a href="#1-左值引用应用场景" class="headerlink" title="1. 左值引用应用场景"></a>1. 左值引用应用场景</h3><h4 id="1-函数传参（避免拷贝）"><a href="#1-函数传参（避免拷贝）" class="headerlink" title="(1) 函数传参（避免拷贝）"></a>(1) 函数传参（避免拷贝）</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 高效：引用传递（零拷贝）</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">processVector</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; v)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 操作大型容器</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">bigData</span><span class="params">(<span class="number">1e6</span>)</span></span>;</span><br><span class="line"><span class="built_in">processVector</span>(bigData);  <span class="comment">// 避免复制百万元素</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-拷贝语义实现"><a href="#2-拷贝语义实现" class="headerlink" title="(2) 拷贝语义实现"></a>(2) 拷贝语义实现</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 拷贝构造函数</span></span><br><span class="line">    <span class="built_in">Matrix</span>(<span class="type">const</span> Matrix&amp; other) &#123;</span><br><span class="line">        <span class="built_in">copyData</span>(other.data); <span class="comment">// 深拷贝实现</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 拷贝赋值运算符</span></span><br><span class="line">    Matrix&amp; <span class="keyword">operator</span>=(<span class="type">const</span> Matrix&amp; other) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;other) &#123;</span><br><span class="line">            <span class="built_in">freeData</span>();</span><br><span class="line">            <span class="built_in">copyData</span>(other.data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-多返回值机制"><a href="#3-多返回值机制" class="headerlink" title="(3) 多返回值机制"></a>(3) 多返回值机制</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过引用参数返回多个计算结果</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">computeStats</span><span class="params">(<span class="type">const</span> Dataset&amp; data, </span></span></span><br><span class="line"><span class="params"><span class="function">                 <span class="type">double</span>&amp; mean, </span></span></span><br><span class="line"><span class="params"><span class="function">                 <span class="type">double</span>&amp; variance)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 计算统计值</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用</span></span><br><span class="line"><span class="type">double</span> avg, var;</span><br><span class="line"><span class="built_in">computeStats</span>(largeData, avg, var);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-右值引用应用场景"><a href="#2-右值引用应用场景" class="headerlink" title="2. 右值引用应用场景"></a>2. 右值引用应用场景</h3><h4 id="1-移动语义优化"><a href="#1-移动语义优化" class="headerlink" title="(1) 移动语义优化"></a>(1) 移动语义优化</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MemoryBlock</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 移动构造函数</span></span><br><span class="line">    <span class="built_in">MemoryBlock</span>(MemoryBlock&amp;&amp; other) <span class="keyword">noexcept</span> </span><br><span class="line">        : <span class="built_in">data</span>(other.data), <span class="built_in">size</span>(other.size) &#123;</span><br><span class="line">        other.data = <span class="literal">nullptr</span>; <span class="comment">// 资源转移</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">char</span>* data;</span><br><span class="line">    <span class="type">size_t</span> size;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">MemoryBlock <span class="title">createBlock</span><span class="params">()</span></span>;</span><br><span class="line">MemoryBlock mb = <span class="built_in">createBlock</span>(); <span class="comment">// 触发移动构造</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-完美转发机制"><a href="#2-完美转发机制" class="headerlink" title="(2) 完美转发机制"></a>(2) 完美转发机制</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">relay</span><span class="params">(T&amp;&amp; arg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 保持值类别完美转发</span></span><br><span class="line">    <span class="built_in">process</span>(std::forward&lt;T&gt;(arg));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">relay</span>(<span class="number">42</span>);            <span class="comment">// 转发右值</span></span><br><span class="line"><span class="type">int</span> x = <span class="number">10</span>;</span><br><span class="line"><span class="built_in">relay</span>(x);             <span class="comment">// 转发左值</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-高效算法实现"><a href="#3-高效算法实现" class="headerlink" title="(3) 高效算法实现"></a>(3) 高效算法实现</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用移动语义高效交换对象</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(T&amp; a, T&amp; b)</span> <span class="keyword">noexcept</span> </span>&#123;</span><br><span class="line">    <span class="function">T <span class="title">temp</span><span class="params">(std::move(a))</span></span>;</span><br><span class="line">    a = std::<span class="built_in">move</span>(b);</span><br><span class="line">    b = std::<span class="built_in">move</span>(temp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、综合应用实例"><a href="#四、综合应用实例" class="headerlink" title="四、综合应用实例"></a>四、综合应用实例</h2><h3 id="1-工厂模式优化"><a href="#1-工厂模式优化" class="headerlink" title="1. 工厂模式优化"></a>1. 工厂模式优化</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function">T <span class="title">create</span><span class="params">(Args&amp;&amp;... args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 完美转发构造参数</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">T</span>(std::forward&lt;Args&gt;(args)...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> vec = create&lt;vector&lt;<span class="type">int</span>&gt;&gt;(<span class="number">1000</span>, <span class="number">42</span>); <span class="comment">// 原地构造</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-RAII资源管理"><a href="#2-RAII资源管理" class="headerlink" title="2. RAII资源管理"></a>2. RAII资源管理</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">FileHandle</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">FileHandle</span>(string_view path) : <span class="built_in">handle</span>(<span class="built_in">openFile</span>(path)) &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 移动支持</span></span><br><span class="line">    <span class="built_in">FileHandle</span>(FileHandle&amp;&amp; other) <span class="keyword">noexcept</span> </span><br><span class="line">        : <span class="built_in">handle</span>(other.handle) &#123;</span><br><span class="line">        other.handle = <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">FileHandle</span>() &#123; <span class="keyword">if</span>(handle) <span class="built_in">closeFile</span>(handle); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    FILE* handle;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-容器优化策略"><a href="#3-容器优化策略" class="headerlink" title="3. 容器优化策略"></a>3. 容器优化策略</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vector&lt;Matrix&gt; largeMatrices;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加元素时的优化</span></span><br><span class="line">largeMatrices.<span class="built_in">push_back</span>(<span class="built_in">Matrix</span>(<span class="number">1000</span>, <span class="number">1000</span>));  <span class="comment">// C++11前：拷贝</span></span><br><span class="line">                                              <span class="comment">// C++11后：移动</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="五、最佳实践建议"><a href="#五、最佳实践建议" class="headerlink" title="五、最佳实践建议"></a>五、最佳实践建议</h2><ol>
+<li><p><strong>优先使用const T&amp;</strong>：作为函数参数时，除非需要修改</p>
+</li>
+<li><p><strong>为资源管理类实现移动语义</strong>：显著提升资源转移效率</p>
+</li>
+<li><p><strong>理解std::move本质</strong>：<code>static_cast&lt;T&amp;&amp;&gt;</code>，不移动任何数据</p>
+</li>
+<li><p><strong>警惕万能引用陷阱</strong>：<code>T&amp;&amp;</code>在模板推导中成为万能引用</p>
+</li>
+<li><p><strong>值类别判断技巧</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> valueCategory = [](<span class="keyword">auto</span>&amp;&amp; x) &#123;</span><br><span class="line">     <span class="keyword">return</span> std::is_rvalue_reference_v&lt;<span class="keyword">decltype</span>(x)&gt; ? </span><br><span class="line">         <span class="string">&quot;Rvalue&quot;</span> : <span class="string">&quot;Lvalue&quot;</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="六、现代C-演进"><a href="#六、现代C-演进" class="headerlink" title="六、现代C++演进"></a>六、现代C++演进</h2><ol>
+<li><strong>C++11</strong>：引入右值引用和移动语义</li>
+<li><strong>C++14</strong>：优化通用引用规则</li>
+<li><strong>C++17</strong>：强复制消除保证</li>
+<li><strong>C++20</strong>：新增移动语义应用场景</li>
+<li><strong>C++23</strong>：移动语义扩展至其他语言特性</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://qdxiaojunjun.github.io">小马同学</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://qdxiaojunjun.github.io/2025/07/14/%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/">https://qdxiaojunjun.github.io/2025/07/14/%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://qdxiaojunjun.github.io" target="_blank">云志分享</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a></div><div class="post-share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgfe66bbbdeae303140d8086299fb414d.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/07/15/P3742%20umi%E7%9A%84%E5%87%BD%E6%95%B0/" title="P3742 umi的函数"><img class="cover" src="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/img16bb83cae75033c0faeb2646899d352.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">P3742 umi的函数</div></div><div class="info-2"><div class="info-item-1">简单模拟</div></div></div></a><a class="pagination-related" href="/2025/07/12/C++%E8%BF%90%E7%AE%97%E7%AC%A6%E9%87%8D%E8%BD%BD/" title="C++运算符重载"><img class="cover" src="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgd3307a696b61fe3b97769aec40b78d8.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">C++运算符重载</div></div><div class="info-2"><div class="info-item-1">运算符重载</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/07/31/C++11%E5%86%85%E5%AE%B9%E6%80%BB%E7%BB%93/" title="C++11内容总结"><img class="cover" src="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/img66f4c97c1558b747fb9d20d1a00f707.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-31</div><div class="info-item-2">C++11内容总结</div></div><div class="info-2"><div class="info-item-1">C++11内容总结一、关键字和语法auto： 可以根据右值，推导出右值的类型，然后左边变量的类型也就已知了！nullptr: 给指针专用（能够和整数进行区别） #define NULL 0forrach:  可以遍历数组，容器等等。。。for(Type val : container) &#x3D;》 底层就是通过指针或者迭代器来实现的{	cout &lt;&lt; val &lt;&lt; “ “;}右值引用：move 移动语义函数和forward类型完美转发函数模板的一个新特性：typename… A 表示可变参（类型参数） 二、绑定器和函数对象function: 函数对象bind：绑定器   bind1st 和 bind2nd + 二元函数对象 —》一元函数lambda表达式： 三、智能指针share_ptr 和 weak_ptr  四、容器set 和 map : 红黑树 O(lng n)unordered_set 和 unordered_map : 哈希表 O(1)array；数组   vectorforward_list: 前向链表 list 五、 C++语言级别支持的...</div></div></div></a><a class="pagination-related" href="/2025/07/12/C++%E8%BF%90%E7%AE%97%E7%AC%A6%E9%87%8D%E8%BD%BD/" title="C++运算符重载"><img class="cover" src="https://cdn.jsdelivr.net/gh/qdxiaojunjun/picdemo/imgd3307a696b61fe3b97769aec40b78d8.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-12</div><div class="info-item-2">C++运算符重载</div></div><div class="info-2"><div class="info-item-1">运算符重载</div></div></div></a><a class="pagination-related" href="/2025/07/30/function%E7%9A%84%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E7%9A%84%E6%B5%85%E7%90%86%E8%A7%A3/" title="function的底层原理的浅理解"><img class="cover" src="https://cdn.pixabay.com/photo/2014/11/21/03/24/mountains-540115_1280.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-30</div><div class="info-item-2">function的底层原理的浅理解</div></div><div class="info-2"><div class="info-item-1">function的底层原理的浅理解📌核心原理 （一句话）​ std::function通过类型擦除技术封装任意可调用对象，提供统一的函数调用接口operator() 🧠 核心实现要点（面试常考）1. 类型擦除（Type Erasure）12345template&lt;typename R, typename... A&gt;class myfunction&lt;R(A...)&gt; &#123;    using PFUNC = R(*)(A...); // 关键类型定义    PFUNC _pfunc; // 存储函数指针&#125;;   实现目标：抹去不同类型函数的差异 技术手段： 使用函数指针类型统一接口 通过模板特化处理不同函数签名    2.可变参数模板（Variadic Templates）123R operator() (A... arg) &#123;    return _pfunc(arg...); // 参数包解包&#125;   ... 表示参数包 解决不同参数数量的通用处理 支持0到任意数量参数  3. 统一调用接口123// 调用方式统一为...</div></div></div></a><a class="pagination-related" href="/2025/07/07/%E4%BB%A3%E7%A0%81%E5%9D%97%E6%BC%94%E7%A4%BA/%E6%BC%94%E7%A4%BA/" title="代码演示"><img class="cover" src="https://cdn.pixabay.com/photo/2019/08/28/12/20/fog-4436636_1280.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-07</div><div class="info-item-2">代码演示</div></div><div class="info-2"><div class="info-item-1">代码块的演示</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDc4Ny8zNzI1Nw=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">左值与右值及其应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">一、左值与右值的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B7%A6%E5%80%BC%E7%89%B9%E7%82%B9"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. 左值特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%8F%B3%E5%80%BC%E7%89%B9%E7%82%B9"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. 右值特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%80%BC%E7%B1%BB%E5%88%AB%E5%88%92%E5%88%86"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. 值类别划分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">二、左值引用与右值引用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 引用类型对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8-T"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 左值引用 (T&amp;)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8-T"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. 右值引用 (T&amp;&amp;)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%B8%B8%E9%87%8F%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8-const-T"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. 常量左值引用 (const T&amp;)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E8%A7%A3%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">三、应用场景解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. 左值引用应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%87%BD%E6%95%B0%E4%BC%A0%E5%8F%82%EF%BC%88%E9%81%BF%E5%85%8D%E6%8B%B7%E8%B4%9D%EF%BC%89"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">(1) 函数传参（避免拷贝）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E6%8B%B7%E8%B4%9D%E8%AF%AD%E4%B9%89%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">(2) 拷贝语义实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC%E6%9C%BA%E5%88%B6"><span class="toc-number">1.3.1.3.</span> <span class="toc-text">(3) 多返回值机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.3.2.</span> <span class="toc-text">2. 右值引用应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%BC%98%E5%8C%96"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">(1) 移动语义优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">(2) 完美转发机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E9%AB%98%E6%95%88%E7%AE%97%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.3.2.3.</span> <span class="toc-text">(3) 高效算法实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BB%BC%E5%90%88%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B"><span class="toc-number">1.4.</span> <span class="toc-text">四、综合应用实例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E4%BC%98%E5%8C%96"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. 工厂模式优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-RAII%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. RAII资源管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AE%B9%E5%99%A8%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. 容器优化策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.5.</span> <span class="toc-text">五、最佳实践建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%8E%B0%E4%BB%A3C-%E6%BC%94%E8%BF%9B"><span class="toc-number">1.6.</span> <span class="toc-text">六、现代C++演进</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;2025 By 小马同学</span></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+
+  const loadLivere = (el, path) => {
+    window.livereOptions = {
+      refer: path || location.pathname
+    }
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyLivere = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if (isShuoshuo) {
+    'Livere' === 'Livere'
+      ? window.shuoshuoComment = { loadComment: loadLivere }
+      : window.loadOtherComment = loadLivere
+    return
+  }
+
+  if ('Livere' === 'Livere' || !true) {
+    if (true) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="8473243320" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="false"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="true" data-text="I,LOVE,YOU" data-fontsize="15px" data-random="false" async="async"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2d-widget/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2d-widget/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2d-widget/assets/koharu.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":40,"vOffset":-30,"opacity":0.9},"mobile":{"show":true},"dialog":{"enable":true,"hitokoto":true,"script":["欢迎来到我的博客","点击我有惊喜哦~"],"onClick":"function() {\n  // 先隐藏当前消息\n  this.hideMessage();\n  \n  // 添加点击动画\n  this.element.classList.add('click-animation');\n  setTimeout(() => {\n    this.element.classList.remove('click-animation');\n    \n    // 延迟显示新消息\n    setTimeout(() => {\n      const specialMessages = [\n        \"哇！你真的点我了！\",\n        \"这是一个秘密消息！\",\n        \"恭喜发现彩蛋🎉\",\n        \"(悄悄话模式启动)\"\n      ];\n      const specialMsg = specialMessages[Math.floor(Math.random() * specialMessages.length)];\n      this.showMessage(specialMsg);\n      \n      // 可以在这里添加音效（如果有音频系统）\n      if(window.AudioContext) {\n        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();\n        const oscillator = audioCtx.createOscillator();\n        oscillator.type = 'sine';\n        oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);\n        oscillator.connect(audioCtx.destination);\n        oscillator.start();\n        oscillator.stop(audioCtx.currentTime + 0.1);\n      }\n    }, 300);\n  }, 100);\n}\n"},"log":false});</script></body></html>
